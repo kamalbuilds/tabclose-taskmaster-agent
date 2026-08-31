@@ -1,4 +1,4 @@
-# Architecture — Tabclose
+# Architecture: Tabclose
 
 ```mermaid
 flowchart LR
