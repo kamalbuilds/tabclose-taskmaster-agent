@@ -36,6 +36,12 @@ class ProbeResult:
     latency_ms: float
     timestamp: str
     error: Optional[str] = None
+    # True only when this probe actually reached the target and formed an
+    # opinion about it. False means "we could not observe" -- which is NOT
+    # the same as "we observed a failure". Collapsing those two into ok=False
+    # would let an unreachable Observer B silently corroborate every
+    # single-region blip, defeating the entire corroboration thesis.
+    observed: bool = True
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -62,6 +68,8 @@ def probe(url: str, timeout_s: float = 5.0) -> ProbeResult:
             timestamp=timestamp,
         )
     except httpx.HTTPError as exc:
+        # This probe DID reach the network and the target refused/timed out:
+        # that is a real observation of a failing target, so observed=True.
         latency_ms = (time.monotonic() - started) * 1000
         return ProbeResult(
             region=REGION,
@@ -71,6 +79,7 @@ def probe(url: str, timeout_s: float = 5.0) -> ProbeResult:
             latency_ms=round(latency_ms, 2),
             timestamp=timestamp,
             error=str(exc),
+            observed=True,
         )
 
 
@@ -87,8 +96,12 @@ def call_observer_b(function_url: str, target_url: str, timeout_s: float = 8.0) 
         response = httpx.post(function_url, json={"target_url": target_url}, timeout=timeout_s)
         response.raise_for_status()
         data = response.json()
+        data.setdefault("observed", True)
         return ProbeResult(**data)
     except (httpx.HTTPError, ValueError, TypeError) as exc:
+        # We could not reach OBSERVER B ITSELF, so we learned nothing about
+        # the target. observed=False makes the validator reject rather than
+        # treat our own blindness as a second confirming witness.
         latency_ms = (time.monotonic() - started) * 1000
         return ProbeResult(
             region=REGION,
@@ -98,6 +111,7 @@ def call_observer_b(function_url: str, target_url: str, timeout_s: float = 8.0) 
             latency_ms=round(latency_ms, 2),
             timestamp=timestamp,
             error=f"observer_b unreachable: {exc}",
+            observed=False,
         )
 
 

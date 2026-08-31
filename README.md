@@ -18,12 +18,28 @@ billing, `gcloud auth`).
 ## Prerequisites
 
 - Python 3.11+.
-- `pip install -r requirements.txt` (or at minimum `google-adk`, `httpx`,
-  `fastapi`, plus the shared `agentspine` package on `PYTHONPATH`).
+- A virtualenv with dependencies installed (see below). `google-adk` is
+  not in the stdlib; `make demo`/`make test` will traceback with
+  `ModuleNotFoundError: No module named 'google'` without this step.
 - A Gemini API key (`GOOGLE_API_KEY`) only for the live ADK incident agent;
   not required for the probes, validator, job tick, or offline test suite.
 - For the cloud deploy path: `gcloud` CLI authenticated, a GCP project
   with billing enabled.
+
+## Set up the environment (once, from the repo root)
+
+```bash
+cd /path/to/devpost   # repo root, one level above projects/
+python3.11 -m venv .venv
+.venv/bin/pip install -r projects/tabclose/requirements.txt
+```
+
+Then run every `make` target from `projects/tabclose/` with
+`PY=../../.venv/bin/python make <target>`, or export
+`PY=$(pwd)/../../.venv/bin/python` once per shell. The Makefile defaults
+to plain `python3`, which will not have `google-adk` installed on a fresh
+clone; this step is what makes `make demo` actually work rather than
+traceback.
 
 ## Running the mechanism locally
 
@@ -44,6 +60,18 @@ confirms it fails, then confirms it passes when restored.
 make demo
 ```
 
+Runs `demo_local.py`: a scripted transcript of the whole mechanism with
+zero network calls, zero GCP credentials, and a fake `classify_fn` in
+place of Gemini. It walks the reject case (single-region blip), the accept
+case (both observers corroborate), the idempotency claim (a duplicate tick
+writes nothing new), and a crash-mid-run resume, asserting each invariant
+as it goes (`assert_demo()` exits non-zero if any step lies). This is the
+fastest way to see the whole mechanism proven end to end.
+
+```bash
+make demo-live
+```
+
 Runs `python -m job.main` against the local demo target service
 (`demo_target/app.py`, a small FastAPI app you can break on purpose) and
 prints the tick result. With the target healthy, Observer A short-circuits
@@ -51,6 +79,12 @@ and nothing is written (`return None` in `job/main.py:run_tick_once`,
 "most ticks are healthy ticks and shouldn't cost a write"). Break the
 target and re-run to see a claim, a validator verdict, and (if both
 probes agree) an incident artifact.
+
+**The Gemini call is load-bearing in `demo-live`**, not decorative: once
+the validator passes, `job/main.py` calls the ADK incident agent for real.
+Set `GOOGLE_API_KEY` before breaking the target, or the run fails with
+`ValueError: No API key was provided` at the classification step. Start
+the demo target first (`python -m demo_target.app`, listens on `:8080`).
 
 ## Manually firing a tick
 

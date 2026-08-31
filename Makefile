@@ -1,28 +1,30 @@
-PY ?= python3
+PY ?= $(if $(wildcard ../../.venv/bin/python),../../.venv/bin/python,python3)
 export PYTHONPATH := .:../shared
 
 TARGET_URL ?= http://localhost:8080/health
 GCP_REGION ?= us-central1
 GCP_REGION_B ?= europe-west1
-BUCKET ?= $(GCP_PROJECT)-tabclose-artifacts
-JOB_NAME ?= tabclose-tick
-SCHEDULER_NAME ?= tabclose-scheduler
 
-.PHONY: deploy demo tick test teardown
+.PHONY: deploy demo demo-live tick test teardown
 
 test:
 	$(PY) -m pytest . -v
 
 demo:
+	$(PY) demo_local.py
+
+demo-live:
 	TABCLOSE_TARGET_URL=$(TARGET_URL) $(PY) -m job.main
 
-tick: demo
+tick: demo-live
 
 deploy:
-	bash infra/deploy.sh $(GCP_PROJECT) $(GCP_REGION) $(GCP_REGION_B) $(BUCKET) $(JOB_NAME) $(SCHEDULER_NAME)
+	@test -n "$(PROJECT_ID)" || { echo "usage: make deploy PROJECT_ID=<gcp-project>"; exit 1; }
+	PROJECT_ID=$(PROJECT_ID) REGION=$(GCP_REGION) REGION_B=$(GCP_REGION_B) bash ../../infra/deploy_tabclose.sh
 
 teardown:
-	bash infra/teardown.sh $(GCP_PROJECT) $(GCP_REGION) $(GCP_REGION_B) $(BUCKET) $(JOB_NAME) $(SCHEDULER_NAME)
+	@test -n "$(PROJECT_ID)" || { echo "usage: make teardown PROJECT_ID=<gcp-project>"; exit 1; }
+	PROJECT_ID=$(PROJECT_ID) REGION=$(GCP_REGION) REGION_B=$(GCP_REGION_B) PROJECTS=tabclose bash ../../infra/teardown.sh
 
 kill-mid-run:
-	bash infra/kill_mid_run.sh $(GCP_PROJECT) $(GCP_REGION) $(JOB_NAME)
+	bash infra/kill_mid_run.sh

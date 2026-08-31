@@ -54,7 +54,27 @@ def corroborate(probe_a: dict, probe_b: dict, window_seconds: float = DEFAULT_WI
     a_failed = probe_a.get("ok") is False
     b_failed = probe_b.get("ok") is False
 
+    # A probe that could not reach the target (or, for observer B, could not
+    # be reached at all) has NOT witnessed anything. Absence of evidence is
+    # not corroboration. Missing key defaults to True so a probe payload
+    # written before this field existed still behaves as a real observation.
+    a_observed = probe_a.get("observed", True) is not False
+    b_observed = probe_b.get("observed", True) is not False
+
     evidence = {"probe_a": probe_a, "probe_b": probe_b, "window_seconds": window_seconds}
+
+    if not a_observed:
+        return Verdict(
+            passed=False,
+            evidence=evidence,
+            reason="observer_a did not actually observe the target (probe unreachable), cannot corroborate",
+        )
+    if not b_observed:
+        return Verdict(
+            passed=False,
+            evidence=evidence,
+            reason="observer_b did not actually observe the target (probe unreachable), cannot corroborate",
+        )
 
     if not a_failed:
         return Verdict(passed=False, evidence=evidence, reason="observer_a saw no failure")
