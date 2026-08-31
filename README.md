@@ -51,8 +51,11 @@ If either needs one, that is a bug in this project.
 
 - Python 3.11 or newer.
 - For the live Gemini path only (`make demo-live` against a broken target):
-  a Gemini API key in `GOOGLE_API_KEY`. Not needed for the probes, the
-  validator, the job tick, the offline test suite, or `make demo`.
+  either a Gemini API key in `GOOGLE_API_KEY`, or Vertex AI + ADC
+  (`GOOGLE_GENAI_USE_VERTEXAI=TRUE` + `GOOGLE_CLOUD_PROJECT`, the real
+  deploy's mode — `infra/deploy.sh` sets this on the Cloud Run Job so no
+  literal API key exists anywhere in production). Neither is needed for the
+  probes, the validator, the job tick, the offline test suite, or `make demo`.
 - For the cloud deploy path: the `gcloud` CLI authenticated, and a GCP
   project with billing enabled.
 
