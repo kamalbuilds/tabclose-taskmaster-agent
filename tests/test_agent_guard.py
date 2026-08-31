@@ -69,7 +69,7 @@ def test_classify_fn_default_is_the_real_gemini_call():
     real_source = inspect.getsource(incident_agent._classify_with_gemini)
     assert "LlmAgent" in real_source
     assert "InMemoryRunner" in real_source
-    assert incident_agent.MODEL_NAME.startswith("gemini-3")
+    assert incident_agent.MODEL_NAME == "gemini-2.5-flash"
 
 
 def test_draft_incident_with_no_classify_fn_attempts_a_real_call(monkeypatch):

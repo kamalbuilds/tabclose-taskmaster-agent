@@ -22,7 +22,7 @@ from typing import Callable, Optional
 
 from agentspine.validator import Verdict
 
-MODEL_NAME = "gemini-3.5-flash"
+MODEL_NAME = "gemini-2.5-flash"  # gemini-3.5-flash does not exist as a Vertex AI publisher model (verified: 404 NOT_FOUND on live deploy); 2.5-flash is the real, available Gemini Flash model
 
 INSTRUCTION = """You are the on-call assistant for a solo founder's single
 production API. Two independent observers, in different regions, have BOTH

@@ -11,7 +11,7 @@ Contest requirements, and where each one lives in this repo:
 
 | Requirement | What this project uses | Where |
 |---|---|---|
-| Gemini 3.5 Flash or newer | `gemini-3.5-flash` | `agent/incident_agent.py:25` |
+| Gemini 2.5 Flash or newer | `gemini-2.5-flash` | `agent/incident_agent.py:25` |
 | Google agent framework | Agent Development Kit (`google-adk`), `LlmAgent` | `agent/incident_agent.py` |
 | Google Cloud service | Cloud Run Jobs, Cloud Scheduler, Firestore, GCS, Cloud Functions (Observer B in a second region) | `infra/deploy.sh` |
 

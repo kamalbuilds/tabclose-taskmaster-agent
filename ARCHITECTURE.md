@@ -12,7 +12,7 @@ flowchart LR
   CLAIM -->|already complete| SKIP[skipped, no write]
   CLAIM -->|claimed| VAL{{validator/corroboration.py<br/>both_failed AND within_window}}
   VAL -->|reject| REJ[run_tick marks rejected<br/>no artifact]
-  VAL -->|accept| AGENT[agent/incident_agent.py<br/>Gemini 3.5 Flash via ADK<br/>classify + draft status.md]
+  VAL -->|accept| AGENT[agent/incident_agent.py<br/>Gemini 2.5 Flash via ADK<br/>classify + draft status.md]
   AGENT --> ART[job/artifact.py<br/>write_incident_artifact]
   ART --> GCS[(GCS / local backend<br/>incidents/run_id/)]
   JOB --> ALLCLEAR[job/allclear.py<br/>check_and_close_incidents]
@@ -29,7 +29,7 @@ flowchart LR
 | Validator | `validator/corroboration.py` | `CorroborationValidator`, an `agentspine.Validator`. Pure arithmetic: incident iff both probes report `ok=False` and their timestamps fall inside the same `window_seconds`. No model call. |
 | Tick core | `job/main.py:tick_from_probes` | Network-free core: takes already-computed probe dicts, calls `agentspine.run_tick` with the corroboration validator and an `artifact_fn` that only runs on a passing verdict. This is what the offline test suite calls directly, exercising the identical code path Cloud Run runs. |
 | Tick with real probes | `job/main.py:run_tick_once` | Calls the real probes, short-circuits with no write if Probe A is healthy, otherwise delegates to `tick_from_probes`. |
-| Incident agent | `agent/incident_agent.py` | ADK agent backed by Gemini 3.5 Flash. Classifies the failure and drafts `status.md`. Called only from inside `tick_from_probes`'s `artifact_fn`, which `agentspine.run_tick` invokes only after the validator's verdict passes. |
+| Incident agent | `agent/incident_agent.py` | ADK agent backed by Gemini 2.5 Flash. Classifies the failure and drafts `status.md`. Called only from inside `tick_from_probes`'s `artifact_fn`, which `agentspine.run_tick` invokes only after the validator's verdict passes. |
 | Artifact writer | `job/artifact.py` | `write_incident_artifact()`: writes `timeline.json`, both probes' evidence, and `status.md` to the configured backend (GCS or local, matching `agentspine.artifacts`). |
 | All-clear path | `job/allclear.py` | `check_and_close_incidents()`: re-probes open incidents and writes `all-clear.md` into the same folder once both probes see recovery. Called every tick, independent of whether this tick found a new incident. |
 | Demo target | `demo_target/app.py` | A small FastAPI app you can break on purpose so the demo cannot flake on a real third-party dependency. |
