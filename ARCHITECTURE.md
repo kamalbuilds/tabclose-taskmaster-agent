@@ -60,7 +60,7 @@ together derive a deterministic `run_id` from `(service, window_start)`,
 not from "now". `agentspine.run_tick`'s Firestore/in-memory claim makes a
 second tick inside the same window a no-op:
 `tests/test_corroboration_gate.py` and the idempotency tests in
-`projects/shared/tests/` cover this and fail if the claim is bypassed.
+the shared spine's own tests cover this and fail if the claim is bypassed.
 
 ## State model
 
