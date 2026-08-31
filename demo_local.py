@@ -27,6 +27,7 @@ Usage:  ../../.venv/bin/python demo_local.py
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -44,6 +45,23 @@ WINDOW_START = "2026-08-29T06:00:00+00:00"
 T0 = "2026-08-29T06:00:05+00:00"
 T0_PLUS_20S = "2026-08-29T06:00:25+00:00"
 LATER_WINDOW = "2026-08-29T06:10:00+00:00"
+
+
+def demo_artifact_root(suffix: str = "") -> str | None:
+    """Where artifacts land.
+
+    Default (None) is LocalBackend's own fresh temp dir, which is right for
+    tests. For FILMING, demo/record_tabclose.sh sets DEMO_ARTIFACT_DIR to a
+    fixed path so demo/watch_artifacts.py can be pointed at that exact
+    directory in a second pane and be seen going from empty to non-empty on
+    camera. A random temp dir cannot be watched, so the money shot needs this.
+    """
+    base = os.environ.get("DEMO_ARTIFACT_DIR")
+    if not base:
+        return None
+    root = Path(base) / suffix if suffix else Path(base)
+    root.mkdir(parents=True, exist_ok=True)
+    return str(root)
 
 
 def probe(region: str, ok: bool, timestamp: str) -> dict:
@@ -93,7 +111,7 @@ def main() -> int:
     )
 
     idem = MemoryBackend()
-    artifacts = LocalBackend()
+    artifacts = LocalBackend(demo_artifact_root())
     t.note(f"idempotency backend: MemoryBackend (FirestoreBackend in prod)")
     t.note(f"artifact backend:    LocalBackend at {artifacts.root_dir} (GcsBackend in prod)")
 
@@ -187,7 +205,7 @@ def main() -> int:
     # ---------------------------------------------------------------- ACT 4
     t.act(4, "CRASH-RESUME — die mid-write, retry, still one artifact")
     crash_idem = MemoryBackend()
-    crash_artifacts = LocalBackend()
+    crash_artifacts = LocalBackend(demo_artifact_root('crash-resume'))
     boom = {"n": 0}
 
     def flaky_classify(pa: dict, pb: dict) -> str:

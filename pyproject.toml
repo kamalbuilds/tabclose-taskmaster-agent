@@ -1,0 +1,31 @@
+[project]
+name = "tabclose"
+version = "0.1.0"
+description = "Tabclose: corroborated incident detection for a solo founder's Cloud Run API, with a deterministic two-observer veto over Gemini."
+requires-python = ">=3.11"
+
+# Runtime + test dependencies. Pinned to the versions the offline suite is
+# verified against, so a clean clone cannot drift from what we tested.
+# `pip install -e .` installs all of these, which is what makes the README's
+# `make test` and `make demo` work on a fresh machine.
+dependencies = [
+    "google-adk==2.8.0",
+    "google-genai==2.20.0",
+    "google-cloud-firestore==2.29.0",
+    "google-cloud-storage==3.13.1",
+    "opentelemetry-api==1.42.1",
+    "opentelemetry-sdk==1.42.1",
+    "httpx==0.28.1",
+    "requests==2.34.2",
+    "fastapi==0.141.1",
+    "uvicorn==0.52.4",
+    "pydantic==2.13.5",
+    "pytest==9.1.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["agentspine*", "agent*", "job*", "validator*", "probes*", "demo_target*"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

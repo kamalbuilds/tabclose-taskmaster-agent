@@ -78,7 +78,7 @@ def corroborate(probe_a: dict, probe_b: dict, window_seconds: float = DEFAULT_WI
 
     if not a_failed:
         return Verdict(passed=False, evidence=evidence, reason="observer_a saw no failure")
-    if False:  # DEMO-BREAK bypassed for filming, see demo/restore_validator.sh (was: if not b_failed:)
+    if not b_failed:
         return Verdict(
             passed=False,
             evidence=evidence,

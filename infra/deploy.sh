@@ -16,7 +16,9 @@ JOB_NAME="${5:-tabclose-tick}"
 SCHEDULER_NAME="${6:-tabclose-scheduler}"
 
 SCHEDULE_CRON="${TABCLOSE_SCHEDULE_CRON:-*/2 * * * *}"  # 2 min for filming; use "*/10 * * * *" in prod
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"  # devpost/
+# This repo is standalone: it vendors agentspine, so the build context is the
+# repo root itself, not a monorepo parent.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # projects/tabclose/
 
 echo "== Tabclose deploy: project=$PROJECT region_a=$REGION_A region_b=$REGION_B bucket=$BUCKET =="
 
@@ -60,8 +62,8 @@ gcloud projects add-iam-policy-binding "$PROJECT" \
 
 echo "-- Observer B: europe-west1 Cloud Function (separate deploy target) --"
 OBS_B_DIR="$(mktemp -d)"
-cp "$REPO_ROOT/projects/tabclose/probes/observer_b.py" "$OBS_B_DIR/main.py"
-cp "$REPO_ROOT/projects/tabclose/probes/observer_b_requirements.txt" "$OBS_B_DIR/requirements.txt"
+cp "$REPO_ROOT/probes/observer_b.py" "$OBS_B_DIR/main.py"
+cp "$REPO_ROOT/probes/observer_b_requirements.txt" "$OBS_B_DIR/requirements.txt"
 gcloud functions deploy tabclose-observer-b \
   --project "$PROJECT" \
   --region "$REGION_B" \
@@ -82,7 +84,7 @@ gcloud builds submit "$REPO_ROOT" \
   --config /dev/stdin <<EOF
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: ['build', '-t', 'gcr.io/$PROJECT/tabclose-demo-target', '-f', 'projects/tabclose/demo_target/Dockerfile', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT/tabclose-demo-target', '-f', 'demo_target/Dockerfile', '.']
 images: ['gcr.io/$PROJECT/tabclose-demo-target']
 EOF
 gcloud run deploy tabclose-demo-target \
@@ -101,7 +103,7 @@ gcloud builds submit "$REPO_ROOT" \
   --config /dev/stdin <<EOF
 steps:
   - name: gcr.io/cloud-builders/docker
-    args: ['build', '-t', 'gcr.io/$PROJECT/tabclose-job', '-f', 'projects/tabclose/job/Dockerfile', '.']
+    args: ['build', '-t', 'gcr.io/$PROJECT/tabclose-job', '-f', 'job/Dockerfile', '.']
 images: ['gcr.io/$PROJECT/tabclose-job']
 EOF
 

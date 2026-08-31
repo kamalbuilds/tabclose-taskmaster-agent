@@ -51,7 +51,7 @@ export PYTHONPATH=.:../shared
 make test
 ```
 
-Runs the full local suite (26 tests): the corroboration validator (the
+Runs the full local suite (34 tests): the corroboration validator (the
 veto), both probes, the idempotency/crash-resume behavior, the all-clear
 path, and a red/green test that breaks the validator on purpose and
 confirms it fails, then confirms it passes when restored.
@@ -101,7 +101,7 @@ make test
 ```
 
 Runs the full pytest suite in `tests/` and `validator/tests/`. Verified
-26/26 passing locally, including `tests/test_verifier_red_green.py`
+34/34 passing locally, including `tests/test_verifier_red_green.py`
 (breaks the validator, confirms rejection, restores it, confirms
 acceptance) and `tests/test_agent_guard.py` (asserts the ADK agent path is
 unreachable unless the validator has already passed).
@@ -132,7 +132,7 @@ job/             main.py (Cloud Run Job entrypoint), window.py (window
                  bucketing for the idempotency key), artifact.py (GCS/local
                  writer), allclear.py (recovery detection)
 demo_target/     a small FastAPI app you can break on purpose for filming
-tests/           26 tests: idempotency, corroboration gate, all-clear,
+tests/           34 tests: idempotency, corroboration gate, all-clear,
                  red/green validator verification, agent-unreachable guard
 infra/           gcloud deploy/teardown/kill-mid-run scripts, Scheduler wiring
 ```
