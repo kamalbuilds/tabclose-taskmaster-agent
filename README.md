@@ -1,11 +1,28 @@
 # Tabclose
 
-Pager duty for a solo founder's one Cloud Run API. Nobody is watching the
-laptop. Tabclose watches instead, confirms an outage with a second
-independent observer before it believes it, writes the incident file to
-GCS, and drafts a status update while the tab is closed.
+Every "AI incident response" demo in this hackathon will show you one
+flaky healthcheck wired to an LLM. That's not a monitor, it's a false
+alarm generator with extra steps: the first time it wakes you for
+nothing, you mute it, and the next real outage runs unwatched.
+
+Tabclose is built around the one failure mode that actually kills trust
+in monitoring: the false positive. Two independently implemented
+probes, in two different regions, have to agree an incident is real
+inside the same detection window before anything happens. Only then
+does a Gemini agent read the raw evidence and draft a status update.
+It never restarts anything, never pages a human directly, never
+touches production. It writes text to a bucket and gets out of the
+way.
+
+This isn't a filter tuned against a growing library of "definitely a
+real outage" heuristics. It's an architectural decision: the
+corroboration gate is a deterministic function that runs before the
+model is ever invoked, so there's no code path where an LLM's
+confidence substitutes for a second observer actually failing.
 
 **Track: The Taskmaster.**
+
+![Tabclose architecture: Cloud Scheduler fires a Cloud Run Job every two minutes, Probe A checks in-process, a healthy result exits clean at zero cost, an unhealthy result triggers independently-implemented Probe B in a separate region, only when both agree does the corroboration gate pass and Gemini 2.5 Flash classify the failure and write a status update to GCS.](docs/architecture/architecture.png)
 
 Contest requirements, and where each one lives in this repo:
 
@@ -119,10 +136,14 @@ make teardown PROJECT_ID=your-project-id
 Deletes the Scheduler job, the Cloud Run Job, the observer function, and
 the demo target.
 
-**Honest status:** the deploy scripts are written, `shellcheck`-clean, and
-their input guards are tested, but they have not been run end to end
-against a live billed GCP project. Everything described under "Quick
-start" has been verified from a clean clone. See `LIMITATIONS.md`.
+**Deployed status:** `infra/deploy.sh` has been run end to end against a
+live billed GCP project: Cloud Scheduler firing every two minutes, a
+real Cloud Run Job, a real Observer B Cloud Function in a second
+region, real incident artifacts written to GCS, and real Gemini
+2.5 Flash calls classifying real broken-target failures during the
+demo recording. Everything under "Quick start" is separately verified
+offline. See `LIMITATIONS.md` for what's still scoped out (a third
+independent observer, faster all-clear detection).
 
 ## Repo layout
 
