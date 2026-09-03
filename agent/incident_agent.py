@@ -72,9 +72,9 @@ def _format_evidence(probe_a: dict, probe_b: dict) -> str:
 def _classify_with_gemini(probe_a: dict, probe_b: dict, model: str = MODEL_NAME) -> str:
     """Real call path: builds a short-lived ADK LlmAgent + InMemoryRunner,
     sends one message, returns the final text response. One tick, one
-    session, no long-running conversation -- see LIMITATIONS.md's ADK
-    100-event-cap / _init_session-replay notes for why sessions stay short
-    here rather than persisting across ticks.
+    session, no long-running conversation. Sessions stay short because of
+    the ADK 100-event cap and the `_init_session` replay issue, rather than
+    persisting across ticks.
     """
     import asyncio
 

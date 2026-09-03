@@ -3,7 +3,7 @@
 # "Live, unedited demo... rules out a screen-recording montage. The video
 # must show one continuous take." No post-speed compression, no cuts. Real
 # Cloud Run Job cold-start (measured 90-260s per execution during rehearsal)
-# means this will likely run longer than the DEMO_SCRIPT.md ~4:00 target —
+# means this will likely run longer than the ~4:00 target —
 # that is accepted as the honest cost of a real, unedited take over a
 # doctored one that hits an arbitrary runtime.
 set -uo pipefail

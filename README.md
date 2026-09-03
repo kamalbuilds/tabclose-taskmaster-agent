@@ -142,8 +142,8 @@ real Cloud Run Job, a real Observer B Cloud Function in a second
 region, real incident artifacts written to GCS, and real Gemini
 2.5 Flash calls classifying real broken-target failures during the
 demo recording. Everything under "Quick start" is separately verified
-offline. See `LIMITATIONS.md` for what's still scoped out (a third
-independent observer, faster all-clear detection).
+offline. Still scoped out: a third
+independent observer and faster all-clear detection.
 
 ## Repo layout
 
@@ -168,7 +168,7 @@ tests/           36 tests: idempotency, corroboration gate, all-clear,
 infra/           gcloud deploy/teardown/kill-mid-run scripts, Scheduler wiring
 ```
 
-See `ARCHITECTURE.md` for the full flow and `LIMITATIONS.md` for what this
+See `ARCHITECTURE.md` for the full flow and what this
 does not do.
 
 ## Judging access
