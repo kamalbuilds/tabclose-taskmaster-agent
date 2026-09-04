@@ -1,5 +1,9 @@
 # Tabclose
 
+**Try it out (no install): https://tabclose-taskmaster-agent.vercel.app** runs
+the offline end-to-end demo in your browser and shows the second-observer
+corroboration reject a single-region false alarm live.
+
 Every "AI incident response" demo in this hackathon will show you one
 flaky healthcheck wired to an LLM. That's not a monitor, it's a false
 alarm generator with extra steps: the first time it wakes you for
